@@ -3,12 +3,12 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
 
 /// 进化模式
 #[derive(Debug, Clone, Copy)]
+#[allow(dead_code)]
 enum EvolveMode {
     Diagnose,    // 诊断
     Update,      // 更新
@@ -97,6 +97,7 @@ impl EvolutionEngine {
     }
 
     /// 加载进化记录
+    #[allow(dead_code)]
     fn load_records(&mut self) {
         let record_path = format!("{}/.evolve_records.json", self.base_dir);
         if let Ok(content) = fs::read_to_string(&record_path) {
