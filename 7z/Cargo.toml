@@ -1,0 +1,11 @@
+[package]
+name = "seven-z"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "7z"
+path = "src/main.rs"
+
+[dependencies]
+flate2 = "1.0"
