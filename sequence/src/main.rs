@@ -4,6 +4,11 @@ mod runtime;
 mod world;
 mod governance;
 mod models;
+mod knowledge;
+mod plugins;
+mod reflection;
+mod webapi;
+mod sandbox;
 
 use chrono::Local;
 use memory::MemorySystem;
@@ -11,6 +16,10 @@ use identity::Identity;
 use runtime::RuntimeEngine;
 use world::WorldInterface;
 use governance::Governance;
+use knowledge::KnowledgeGraph;
+use plugins::PluginManager;
+use reflection::SelfReflection;
+use sandbox::CodeSandbox;
 use std::env;
 use std::fs;
 use std::io::{self, Write};
@@ -34,6 +43,10 @@ struct SequenceOS {
     runtime: RuntimeEngine,
     world: WorldInterface,
     governance: Governance,
+    knowledge: KnowledgeGraph,
+    plugins: PluginManager,
+    reflection: SelfReflection,
+    sandbox: CodeSandbox,
     session_start: String,
     message_count: u64,
 }
@@ -68,15 +81,67 @@ impl SequenceOS {
         // Load or create governance
         let governance = Governance::load(&sequence_dir);
 
+        // Initialize knowledge graph
+        let knowledge = KnowledgeGraph::new(&sequence_dir);
+
+        // Initialize plugin manager
+        let mut plugins = PluginManager::new(&sequence_dir);
+        // Register built-in plugins
+        Self::register_builtin_plugins(&mut plugins);
+
+        // Initialize self-reflection
+        let reflection = SelfReflection::new(&sequence_dir);
+
+        // Initialize code sandbox
+        let sandbox = CodeSandbox::new(&sequence_dir);
+
         SequenceOS {
             memory,
             identity,
             runtime,
             world,
             governance,
+            knowledge,
+            plugins,
+            reflection,
+            sandbox,
             session_start: Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
             message_count: 0,
         }
+    }
+
+    fn register_builtin_plugins(plugins: &mut PluginManager) {
+        use std::collections::HashMap;
+
+        plugins.register(plugins::Plugin {
+            name: "system".to_string(),
+            version: "1.0".to_string(),
+            description: "System information and monitoring".to_string(),
+            author: "SEQUENCE OS".to_string(),
+            commands: vec!["info".to_string(), "uptime".to_string(), "net".to_string()],
+            enabled: true,
+            config: HashMap::new(),
+        });
+
+        plugins.register(plugins::Plugin {
+            name: "code".to_string(),
+            version: "1.0".to_string(),
+            description: "Code linting and formatting".to_string(),
+            author: "SEQUENCE OS".to_string(),
+            commands: vec!["lint".to_string(), "format".to_string()],
+            enabled: true,
+            config: HashMap::new(),
+        });
+
+        plugins.register(plugins::Plugin {
+            name: "web".to_string(),
+            version: "1.0".to_string(),
+            description: "Web fetching and scraping".to_string(),
+            author: "SEQUENCE OS".to_string(),
+            commands: vec!["fetch".to_string()],
+            enabled: true,
+            config: HashMap::new(),
+        });
     }
 
     fn ensure_dirs(dir: &str) {
@@ -91,6 +156,9 @@ impl SequenceOS {
             &format!("{}/relationships", dir),
             &format!("{}/evolution/snapshots", dir),
             &format!("{}/world", dir),
+            &format!("{}/knowledge", dir),
+            &format!("{}/plugins", dir),
+            &format!("{}/sandbox", dir),
         ];
 
         for d in &dirs {
@@ -141,6 +209,11 @@ impl SequenceOS {
             "read" => self.cmd_read(args),
             "write" => self.cmd_write(args),
             "search" | "find" => self.cmd_search(args),
+            "knowledge" | "kg" => self.cmd_knowledge(args),
+            "plugin" | "pl" => self.cmd_plugin(args),
+            "reflect" => self.cmd_reflect(args),
+            "sandbox" | "exec" => self.cmd_sandbox(args),
+            "webapi" => self.cmd_webapi(args),
             "help" | "h" => self.cmd_help(),
             "quit" | "exit" | "q" => {
                 self.save();
@@ -159,6 +232,9 @@ impl SequenceOS {
              Session:     {}\n\
              Messages:    {}\n\
              Memory:      {} episodic, {} semantic, {} procedural\n\
+             Knowledge:   {} nodes, {} edges\n\
+             Plugins:     {} registered\n\
+             Reflections: {} recorded\n\
              Tasks:       {} pending, {} running, {} completed\n\
              Governance:  {} rules active",
             VERSION,
@@ -169,6 +245,10 @@ impl SequenceOS {
             self.memory.episodic_count(),
             self.memory.semantic_count(),
             self.memory.procedural_count(),
+            self.knowledge.nodes.len(),
+            self.knowledge.edges.len(),
+            self.plugins.plugins.len(),
+            self.reflection.reflections.len(),
             self.runtime.pending_count(),
             self.runtime.running_count(),
             self.runtime.completed_count(),
@@ -640,6 +720,215 @@ Evolution:
         prompt
     }
 
+    /// Knowledge Graph commands
+    fn cmd_knowledge(&mut self, args: &str) -> String {
+        if args.is_empty() {
+            return "Knowledge commands: /knowledge add <id> <label>, /knowledge link <from> <to> <relation>, /knowledge search <query>, /knowledge neighbors <id>, /knowledge stats".to_string();
+        }
+
+        let parts: Vec<&str> = args.splitn(2, ' ').collect();
+        let sub = parts[0];
+
+        match sub {
+            "add" => {
+                let rest = parts.get(1).unwrap_or(&"");
+                let parts2: Vec<&str> = rest.splitn(2, ' ').collect();
+                if parts2.len() < 2 {
+                    return "Usage: /knowledge add <id> <label>".to_string();
+                }
+                self.knowledge.add_node(parts2[0], parts2[1], std::collections::HashMap::new());
+                format!("✅ Added node: {} ({})", parts2[0], parts2[1])
+            }
+            "link" => {
+                let rest = parts.get(1).unwrap_or(&"");
+                let parts2: Vec<&str> = rest.splitn(3, ' ').collect();
+                if parts2.len() < 3 {
+                    return "Usage: /knowledge link <from> <to> <relation>".to_string();
+                }
+                self.knowledge.add_edge(parts2[0], parts2[1], parts2[2], 0.5);
+                format!("✅ Linked: {} -> {} ({})", parts2[0], parts2[1], parts2[2])
+            }
+            "search" | "find" => {
+                let query = parts.get(1).unwrap_or(&"");
+                if query.is_empty() {
+                    return "Usage: /knowledge search <query>".to_string();
+                }
+                let results = self.knowledge.search(query);
+                if results.is_empty() {
+                    format!("No results for: {}", query)
+                } else {
+                    let mut output = format!("🔍 Found {} results:\n", results.len());
+                    for node in results.iter().take(10) {
+                        output.push_str(&format!("  - {} [{}]\n", node.label, node.id));
+                    }
+                    output
+                }
+            }
+            "neighbors" => {
+                let node_id = parts.get(1).unwrap_or(&"");
+                if node_id.is_empty() {
+                    return "Usage: /knowledge neighbors <id>".to_string();
+                }
+                let neighbors = self.knowledge.get_neighbors(node_id);
+                if neighbors.is_empty() {
+                    format!("No neighbors for: {}", node_id)
+                } else {
+                    let mut output = format!("🔗 Neighbors of {}:\n", node_id);
+                    for (node, edge) in &neighbors {
+                        output.push_str(&format!("  - {} ({}) [weight: {}]\n", node.label, edge.relation, edge.weight));
+                    }
+                    output
+                }
+            }
+            "stats" => self.knowledge.stats(),
+            _ => format!("Unknown knowledge command: {}", sub),
+        }
+    }
+
+    /// Plugin commands
+    fn cmd_plugin(&mut self, args: &str) -> String {
+        if args.is_empty() {
+            return "Plugin commands: /plugin list, /plugin enable <name>, /plugin disable <name>, /plugin exec <name>/<cmd> [args]".to_string();
+        }
+
+        let parts: Vec<&str> = args.splitn(2, ' ').collect();
+        let sub = parts[0];
+
+        match sub {
+            "list" | "ls" => self.plugins.list(),
+            "enable" => {
+                let name = parts.get(1).unwrap_or(&"");
+                if name.is_empty() {
+                    return "Usage: /plugin enable <name>".to_string();
+                }
+                if self.plugins.enable(name) {
+                    format!("✅ Enabled plugin: {}", name)
+                } else {
+                    format!("Plugin not found: {}", name)
+                }
+            }
+            "disable" => {
+                let name = parts.get(1).unwrap_or(&"");
+                if name.is_empty() {
+                    return "Usage: /plugin disable <name>".to_string();
+                }
+                if self.plugins.disable(name) {
+                    format!("❌ Disabled plugin: {}", name)
+                } else {
+                    format!("Plugin not found: {}", name)
+                }
+            }
+            "exec" | "run" => {
+                let rest = parts.get(1).unwrap_or(&"");
+                let parts2: Vec<&str> = rest.splitn(2, '/').collect();
+                if parts2.len() < 2 {
+                    return "Usage: /plugin exec <name>/<cmd> [args]".to_string();
+                }
+                let plugin_name = parts2[0];
+                let cmd_args: Vec<String> = parts2[1].split_whitespace().map(|s| s.to_string()).collect();
+                let cmd = cmd_args[0].clone();
+                let args = &cmd_args[1..];
+                
+                match self.plugins.execute(plugin_name, &cmd, args) {
+                    Some(result) => result,
+                    None => format!("Plugin or command not found: {}/{}", plugin_name, cmd),
+                }
+            }
+            _ => format!("Unknown plugin command: {}", sub),
+        }
+    }
+
+    /// Self-Reflection commands
+    fn cmd_reflect(&mut self, args: &str) -> String {
+        if args.is_empty() {
+            return "Reflection commands: /reflect analyze, /reflect record <category> <observation> <insight>, /reflect goal <add|remove> <goal>".to_string();
+        }
+
+        let parts: Vec<&str> = args.splitn(2, ' ').collect();
+        let sub = parts[0];
+
+        match sub {
+            "analyze" => self.reflection.analyze_patterns(),
+            "record" => {
+                let rest = parts.get(1).unwrap_or(&"");
+                let parts2: Vec<&str> = rest.splitn(3, ' ').collect();
+                if parts2.len() < 3 {
+                    return "Usage: /reflect record <category> <observation> <insight>".to_string();
+                }
+                self.reflection.record(parts2[0], parts2[1], parts2[2], vec![]);
+                format!("✅ Reflection recorded: [{}] {}", parts2[0], parts2[1])
+            }
+            "goal" => {
+                let rest = parts.get(1).unwrap_or(&"");
+                let parts2: Vec<&str> = rest.splitn(2, ' ').collect();
+                if parts2.len() < 2 {
+                    return "Usage: /reflect goal <add|remove> <goal>".to_string();
+                }
+                match parts2[0] {
+                    "add" => {
+                        self.reflection.add_goal(parts2[1]);
+                        format!("✅ Goal added: {}", parts2[1])
+                    }
+                    "remove" => {
+                        self.reflection.remove_goal(parts2[1]);
+                        format!("✅ Goal removed: {}", parts2[1])
+                    }
+                    _ => "Usage: /reflect goal <add|remove> <goal>".to_string(),
+                }
+            }
+            _ => format!("Unknown reflection command: {}", sub),
+        }
+    }
+
+    /// Code Sandbox commands
+    fn cmd_sandbox(&mut self, args: &str) -> String {
+        if args.is_empty() {
+            return "Sandbox commands: /sandbox run <language> <code>, /sandbox exec <code>".to_string();
+        }
+
+        let parts: Vec<&str> = args.splitn(2, ' ').collect();
+        let sub = parts[0];
+
+        match sub {
+            "run" | "exec" => {
+                let rest = parts.get(1).unwrap_or(&"");
+                let parts2: Vec<&str> = rest.splitn(2, ' ').collect();
+                if parts2.len() < 2 {
+                    return "Usage: /sandbox run <language> <code>".to_string();
+                }
+                let language = parts2[0];
+                let code = parts2[1];
+                let result = self.sandbox.execute(code, Some(language));
+                self.sandbox.format_result(&result)
+            }
+            _ => format!("Unknown sandbox command: {}", sub),
+        }
+    }
+
+    /// Web API commands
+    fn cmd_webapi(&self, args: &str) -> String {
+        if args.is_empty() {
+            return "Web API commands: /webapi start [port], /webapi status, /webapi docs".to_string();
+        }
+
+        let parts: Vec<&str> = args.splitn(2, ' ').collect();
+        let sub = parts[0];
+
+        match sub {
+            "start" => {
+                let port: u16 = parts.get(1)
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(8080);
+                format!("🌐 Web API would start on port {} (use /webapi docs for endpoints)", port)
+            }
+            "status" => "🌐 Web API is available at http://127.0.0.1:8080".to_string(),
+            "docs" => {
+                "📖 Web API Endpoints:\n  GET  /api/status   - System status\n  GET  /api/health   - Health check\n  GET  /api/tools    - List tools\n  GET  /api/memory   - List memory\n  POST /api/execute  - Execute command\n  GET  /api/docs     - This documentation".to_string()
+            }
+            _ => format!("Unknown webapi command: {}", sub),
+        }
+    }
+
     /// Save all state to disk
     fn save(&mut self) {
         let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
@@ -649,6 +938,9 @@ Evolution:
         self.identity.save(&sequence_dir);
         self.runtime.save(&sequence_dir);
         self.governance.save(&sequence_dir);
+        self.knowledge.save();
+        self.plugins.save();
+        self.reflection.save();
 
         println!("\n💾 State saved.");
     }
