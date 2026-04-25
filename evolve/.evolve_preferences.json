@@ -1,0 +1,7 @@
+{
+  "preferred_provider": "ollama",
+  "preferred_model": "qwen2.5-coder:7b",
+  "frequently_used": [],
+  "last_used": {},
+  "command_count": {}
+}

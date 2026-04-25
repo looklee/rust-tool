@@ -60,9 +60,8 @@ struct EvolutionEngine {
 
 impl EvolutionEngine {
     fn new() -> Self {
-        let base_dir = env::current_dir()
-            .map(|p| p.display().to_string())
-            .unwrap_or_else(|_| "/root".to_string());
+        // 始终使用 /root 作为基目录
+        let base_dir = "/root".to_string();
 
         Self {
             base_dir,
@@ -130,22 +129,48 @@ impl EvolutionEngine {
         }
     }
 
+    /// 获取所有工具列表
+    fn all_tools() -> &'static [&'static str] {
+        &[
+            // 原有工具
+            "cat", "head", "tail", "sort", "uniq", "wc",
+            "grep", "find", "glob", "diff", "du",
+            "info", "ai", "qwencode", "qwencode-git",
+            "patch", "httpserver", "mysh", "rust-utils",
+            // 网络工具
+            "curl", "wget", "ping", "ip", "ss",
+            // 压缩工具
+            "tar", "gzip", "zip", "unzip", "7z",
+            // 文本处理
+            "sed", "awk", "tr", "col", "fmt",
+            // 系统监控
+            "top", "ps", "df", "free", "vmstat",
+            // 安全工具
+            "chmod", "chown", "openssl", "sha256sum", "md5sum",
+            // 代码统计
+            "tokei", "cloc", "scc",
+            // 性能基准
+            "hyperfine", "time", "perf",
+            // JSON/CSV
+            "jq", "xsv", "csvtk",
+            // 终端美化
+            "fzf", "zoxide", "broot", "bat",
+            // 容器管理
+            "docker", "podman", "nerdctl",
+        ]
+    }
+
     /// 诊断所有工具
     fn diagnose(&mut self) {
         println!("🔍 开始诊断所有工具...");
         println!();
 
-        let tools = [
-            "cat", "head", "tail", "sort", "uniq", "wc",
-            "grep", "find", "glob", "diff", "du",
-            "info", "ai", "qwencode", "qwencode-git",
-            "patch", "httpserver", "mysh", "rust-utils",
-        ];
+        let tools = Self::all_tools();
 
         let mut healthy = 0;
         let mut issues = 0;
 
-        for tool in &tools {
+        for &tool in tools {
             let status = self.check_tool(tool);
             if status.compiled && status.errors.is_empty() {
                 println!("  ✅ {} - 正常", tool);
@@ -220,17 +245,12 @@ impl EvolutionEngine {
         println!("🔄 开始更新所有工具...");
         println!();
 
-        let tools = [
-            "cat", "head", "tail", "sort", "uniq", "wc",
-            "grep", "find", "glob", "diff", "du",
-            "info", "ai", "qwencode", "qwencode-git",
-            "patch", "httpserver", "mysh", "rust-utils",
-        ];
+        let tools = Self::all_tools();
 
         let mut updated = 0;
         let mut failed = 0;
 
-        for tool in &tools {
+        for &tool in tools {
             println!("📦 更新 {}...", tool);
 
             let tool_path = format!("{}/{}", self.base_dir, tool);
@@ -286,16 +306,10 @@ impl EvolutionEngine {
         println!("🌱 开始功能扩展...");
         println!();
 
-        // 分析现有工具，找出可以扩展的方向
-        let existing_tools = [
-            "cat", "head", "tail", "sort", "uniq", "wc",
-            "grep", "find", "glob", "diff", "du",
-            "info", "ai", "qwencode", "qwencode-git",
-            "patch", "httpserver", "mysh", "rust-utils",
-        ];
+        let existing_tools = Self::all_tools();
 
         println!("📋 现有工具 ({} 个):", existing_tools.len());
-        for tool in &existing_tools {
+        for &tool in existing_tools {
             println!("  - {}", tool);
         }
 
@@ -318,16 +332,11 @@ impl EvolutionEngine {
         println!("⚡ 开始性能优化...");
         println!();
 
-        let tools = [
-            "cat", "head", "tail", "sort", "uniq", "wc",
-            "grep", "find", "glob", "diff", "du",
-            "info", "ai", "qwencode", "qwencode-git",
-            "patch", "httpserver", "mysh", "rust-utils",
-        ];
+        let tools = Self::all_tools();
 
         let mut optimized = 0;
 
-        for tool in &tools {
+        for &tool in tools {
             let tool_path = format!("{}/{}", self.base_dir, tool);
             if !Path::new(&tool_path).exists() {
                 continue;
