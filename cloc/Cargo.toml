@@ -1,0 +1,7 @@
+[package]
+name = "cloc"
+version = "0.1.0"
+edition = "2021"
+description = "Simplified count lines of code - counts blank, comment, and source lines"
+
+[dependencies]

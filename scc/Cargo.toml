@@ -1,0 +1,7 @@
+[package]
+name = "scc"
+version = "0.1.0"
+edition = "2021"
+description = "Simplified sloc cloc and code - code statistics with percentage breakdown"
+
+[dependencies]

@@ -1,0 +1,9 @@
+[package]
+name = "hyperfine"
+version = "1.0.0"
+edition = "2021"
+description = "A simplified command-line benchmarking tool"
+
+[[bin]]
+name = "hyperfine"
+path = "src/main.rs"

@@ -1,0 +1,8 @@
+[package]
+name = "md5sum"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+md-5 = "0.10"
+hex = "0.4"
