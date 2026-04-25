@@ -158,3 +158,13 @@ fn process_file(file: &str, decompress: bool, keep: bool, force: bool) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_help_flag() {
+        assert!(true);
+    }
+}

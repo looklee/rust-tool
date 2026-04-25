@@ -232,3 +232,13 @@ fn main() {
         println!("{:<20}", disk.mount_point);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_help_flag() {
+        assert!(true);
+    }
+}

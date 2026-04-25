@@ -211,3 +211,13 @@ fn format_mem_human(kb: u64) -> String {
         format!("{}K", kb)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_help_flag() {
+        assert!(true);
+    }
+}

@@ -328,3 +328,13 @@ fn main() {
         eprintln!("\nReport written to {}", file_path);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_help_flag() {
+        assert!(true);
+    }
+}

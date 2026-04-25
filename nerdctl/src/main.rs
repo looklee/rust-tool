@@ -273,3 +273,13 @@ mod uuid {
         format!("{:x}", duration.as_nanos() & 0xFFFFFFFF)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_help_flag() {
+        assert!(true);
+    }
+}

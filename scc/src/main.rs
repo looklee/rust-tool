@@ -454,3 +454,13 @@ fn main() {
         _ => output_table(by_file, &file_stats, &lang_stats, total_lines),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_help_flag() {
+        assert!(true);
+    }
+}

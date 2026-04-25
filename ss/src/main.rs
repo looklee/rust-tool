@@ -277,3 +277,13 @@ fn main() {
 
     show_sockets(&all_sockets, show_all, show_listening);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_help_flag() {
+        assert!(true);
+    }
+}

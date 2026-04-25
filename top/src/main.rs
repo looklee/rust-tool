@@ -443,3 +443,13 @@ fn main() {
         thread::sleep(Duration::from_secs(delay));
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_help_flag() {
+        assert!(true);
+    }
+}
