@@ -22,12 +22,12 @@ pub struct EvolutionReport {
     pub priority: EvolutionPriority,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum EvolutionPriority {
-    Critical,
-    High,
-    Medium,
     Low,
+    Medium,
+    High,
+    Critical,
 }
 
 #[derive(Debug, Clone)]
@@ -340,8 +340,8 @@ mod tests {
 
     #[test]
     fn test_evolution_priority() {
-        assert!(EvolutionPriority::Critical < EvolutionPriority::High);
-        assert!(EvolutionPriority::High < EvolutionPriority::Medium);
-        assert!(EvolutionPriority::Medium < EvolutionPriority::Low);
+        assert!(EvolutionPriority::Low < EvolutionPriority::Medium);
+        assert!(EvolutionPriority::Medium < EvolutionPriority::High);
+        assert!(EvolutionPriority::High < EvolutionPriority::Critical);
     }
 }

@@ -23,7 +23,9 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Run clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: |
+          set -o pipefail
+          cargo clippy --workspace --all-targets -- -D warnings 2>&1
 
   test:
     name: Test Suite
@@ -33,7 +35,9 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Run tests
-        run: cargo test --workspace
+        run: |
+          set -o pipefail
+          cargo test --workspace 2>&1
 
   build:
     name: Build Tool
@@ -44,10 +48,14 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: Build code tool
         run: |
+          set -o pipefail
           echo "=== Building common ==="
-          cargo build --release -p common --verbose 2>&1 | tail -100
+          cargo build --release -p common 2>&1
           echo "=== Building code ==="
-          cargo build --release -p code --verbose 2>&1 | tail -100
+          cargo build --release -p code 2>&1
+          echo "=== Build artifacts ==="
+          ls -la target/release/code 2>/dev/null || echo "Binary not found"
+          ls -la target/release/ 2>&1 | head -20
       - name: Upload artifact
         if: success()
         uses: actions/upload-artifact@v4
