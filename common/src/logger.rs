@@ -1,5 +1,6 @@
 use std::io::{self, Write};
 use std::time::SystemTime;
+use atty;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum LogLevel {

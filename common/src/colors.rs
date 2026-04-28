@@ -1,4 +1,5 @@
 use std::fmt;
+use atty;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Colors {
