@@ -26,9 +26,9 @@ jobs:
       - name: Run clippy on common and code
         run: |
           echo "=== Running clippy on common ==="
-          cargo clippy -p common --all-targets -- -D warnings 2>&1
+          cargo clippy -p common --all-targets -- -D warnings --verbose
           echo "=== Running clippy on code ==="
-          cargo clippy -p code --all-targets -- -D warnings 2>&1
+          cargo clippy -p code --all-targets -- -D warnings --verbose
 
   test:
     name: Test Suite
@@ -40,9 +40,9 @@ jobs:
       - name: Run tests on common and code
         run: |
           echo "=== Testing common ==="
-          cargo test -p common 2>&1
+          cargo test -p common --verbose
           echo "=== Testing code ==="
-          cargo test -p code 2>&1
+          cargo test -p code --verbose
 
   build:
     name: Build Tool
@@ -54,9 +54,9 @@ jobs:
       - name: Build code tool
         run: |
           echo "=== Building common ==="
-          cargo build --release -p common 2>&1
+          cargo build --release -p common --verbose
           echo "=== Building code ==="
-          cargo build --release -p code 2>&1
+          cargo build --release -p code --verbose
           echo "=== Build artifacts ==="
           ls -la target/release/code 2>/dev/null || echo "Binary not found"
           ls -la target/release/ 2>&1 | head -20
