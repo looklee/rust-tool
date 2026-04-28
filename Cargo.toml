@@ -1,0 +1,78 @@
+[workspace]
+resolver = "2"
+members = [
+    "common",
+    "code",
+    "evolve",
+    "7z",
+    "ai",
+    "awk",
+    "bat",
+    "broot",
+    "cat",
+    "chmod",
+    "chown",
+    "cloc",
+    "col",
+    "csvtk",
+    "curl",
+    "df",
+    "diff",
+    "docker",
+    "du",
+    "find",
+    "fmt",
+    "free",
+    "fzf",
+    "glob",
+    "grep",
+    "gzip",
+    "head",
+    "httpserver",
+    "hyperfine",
+    "info",
+    "ip",
+    "jq",
+    "md5sum",
+    "mysh",
+    "nerdctl",
+    "openssl",
+    "patch",
+    "perf",
+    "ping",
+    "podman",
+    "ps",
+    "qwencode",
+    "qwencode-git",
+    "rust-utils",
+    "scc",
+    "sed",
+    "sequence",
+    "sha256sum",
+    "sort",
+    "ss",
+    "tail",
+    "tar",
+    "time",
+    "tokei",
+    "top",
+    "tr",
+    "uniq",
+    "unzip",
+    "vmstat",
+    "wc",
+    "wget",
+    "xsv",
+    "zip",
+    "zoxide",
+]
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true

@@ -1,0 +1,11 @@
+[package]
+name = "code"
+version = "0.1.0"
+edition = "2021"
+description = "Unified AI Coding Assistant - All-in-One Solution"
+keywords = ["ai", "coding", "assistant", "claude-code", "qwen"]
+categories = ["development-tools", "command-line-utilities"]
+
+[dependencies]
+common = { path = "../common" }
+walkdir = "2.4"

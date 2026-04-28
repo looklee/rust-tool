@@ -2,8 +2,7 @@
 name = "ai"
 version = "0.1.0"
 edition = "2021"
+description = "AI assistant with multiple model providers"
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-ureq = { version = "2.9", features = ["json"] }
+common = { path = "../common" }

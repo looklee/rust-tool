@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-atty = "0.2"
+common = { path = "../common", features = ["color"] }

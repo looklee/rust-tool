@@ -1,0 +1,21 @@
+[package]
+name = "common"
+version = "0.1.0"
+edition = "2021"
+description = "Common utilities for rust-tool projects"
+license = "MIT"
+
+[dependencies]
+atty = { version = "0.2", optional = true }
+regex = { version = "1.10", optional = true }
+chrono = { version = "0.4", optional = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ureq = { version = "2.9", features = ["json"] }
+walkdir = "2.4"
+
+[features]
+default = ["color"]
+color = ["atty"]
+regex = ["dep:regex"]
+chrono = ["dep:chrono"]
