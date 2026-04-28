@@ -21,11 +21,9 @@ jobs:
         with:
           components: rustfmt, clippy
       - name: Check formatting
-        run: cargo fmt --all -- --check || cargo fmt --all
+        run: cargo fmt --all -- --check
       - name: Run clippy
-        run: |
-          echo "=== Clippy Output ==="
-          cargo clippy --workspace --all-targets -- -D warnings 2>&1 || true
+        run: cargo clippy --workspace --all-targets -- -D warnings
 
   test:
     name: Test Suite
@@ -35,12 +33,10 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Run tests
-        run: |
-          echo "=== Test Output ==="
-          cargo test --workspace 2>&1 || echo "Tests completed"
+        run: cargo test --workspace
 
-  build-code:
-    name: Build Code Tool
+  build:
+    name: Build Tool
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,23 +44,13 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: Build code tool
         run: |
-          echo "=== Build Output ==="
-          cargo build --release -p code 2>&1
+          echo "=== Building common ==="
+          cargo build --release -p common --verbose 2>&1 | tail -100
+          echo "=== Building code ==="
+          cargo build --release -p code --verbose 2>&1 | tail -100
       - name: Upload artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: code-binary
           path: target/release/code
-
-  build-common:
-    name: Build Common Library
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-      - name: Build common library
-        run: |
-          echo "=== Build Output ==="
-          cargo build --release -p common 2>&1
