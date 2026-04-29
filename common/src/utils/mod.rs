@@ -14,25 +14,68 @@ pub fn print_help_and_exit(help_text: &str) {
     std::process::exit(0);
 }
 
-pub fn get_home_dir() -> Option<PathBuf> {
-    dirs::home_dir()
+pub fn is_termux() -> bool {
+    super::termux::TermuxInfo::detect_termux()
 }
 
-pub fn get_config_dir() -> Option<PathBuf> {
-    dirs::config_dir()
+pub fn get_termux_info() -> super::termux::TermuxInfo {
+    super::termux::TermuxInfo::new()
 }
 
-pub fn get_cache_dir() -> Option<PathBuf> {
-    dirs::cache_dir()
+pub fn get_home_dir() -> PathBuf {
+    if is_termux() {
+        super::termux::TermuxInfo::get_home_dir()
+    } else {
+        dirs::home_dir().unwrap_or_else(|| PathBuf::from("."))
+    }
+}
+
+pub fn get_config_dir() -> PathBuf {
+    if is_termux() {
+        super::termux::TermuxInfo::get_config_dir()
+    } else {
+        dirs::config_dir().unwrap_or_else(|| PathBuf::from("."))
+    }
+}
+
+pub fn get_cache_dir() -> PathBuf {
+    if is_termux() {
+        super::termux::TermuxInfo::get_cache_dir()
+    } else {
+        dirs::cache_dir().unwrap_or_else(|| PathBuf::from("."))
+    }
+}
+
+pub fn get_storage_dir() -> PathBuf {
+    if is_termux() {
+        super::termux::TermuxInfo::get_storage_dir()
+    } else {
+        get_home_dir()
+    }
+}
+
+pub fn get_downloads_dir() -> PathBuf {
+    if is_termux() {
+        super::termux::TermuxInfo::get_downloads_dir()
+    } else {
+        dirs::download_dir().unwrap_or_else(|| get_home_dir())
+    }
+}
+
+pub fn get_documents_dir() -> PathBuf {
+    if is_termux() {
+        super::termux::TermuxInfo::get_documents_dir()
+    } else {
+        dirs::document_dir().unwrap_or_else(|| get_home_dir())
+    }
 }
 
 pub fn expand_tilde(path: &str) -> PathBuf {
-    if path.starts_with('~') {
-        if let Some(home) = get_home_dir() {
-            PathBuf::from(path.replace('~', home.to_str().unwrap_or("")))
-        } else {
-            PathBuf::from(path)
-        }
+    if is_termux() {
+        super::termux::TermuxInfo::expand_path(path)
+    } else if path.starts_with('~') {
+        let home = get_home_dir();
+        PathBuf::from(path.replace('~', home.to_str().unwrap_or(""))
     } else {
         PathBuf::from(path)
     }
