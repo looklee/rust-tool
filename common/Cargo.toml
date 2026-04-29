@@ -6,7 +6,7 @@ description = "Common utilities for rust-tool projects"
 license = "MIT"
 
 [dependencies]
-atty = "0.2"
+atty = { version = "0.2", optional = true }
 regex = { version = "1.10", optional = true }
 chrono = { version = "0.4", optional = true }
 serde = { version = "1.0", features = ["derive"] }
@@ -22,5 +22,6 @@ tracing-appender = "0.2"
 
 [features]
 default = []
+color = ["dep:atty"]
 regex = ["dep:regex"]
 chrono = ["dep:chrono"]
