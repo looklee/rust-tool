@@ -21,8 +21,10 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
-      - name: Check formatting
-        run: cargo fmt --all -- --check
+      - name: Check formatting on common
+        run: cargo fmt -p common -- --check
+      - name: Check formatting on code
+        run: cargo fmt -p code -- --check
       - name: Run clippy on common
         run: cargo clippy -p common --all-targets -- -D warnings
       - name: Run clippy on code
