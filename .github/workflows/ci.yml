@@ -23,12 +23,10 @@ jobs:
           components: rustfmt, clippy
       - name: Check formatting
         run: cargo fmt --all -- --check
-      - name: Run clippy on common and code
-        run: |
-          echo "=== Running clippy on common ==="
-          cargo clippy -p common --all-targets -- -D warnings --verbose
-          echo "=== Running clippy on code ==="
-          cargo clippy -p code --all-targets -- -D warnings --verbose
+      - name: Run clippy on common
+        run: cargo clippy -p common --all-targets -- -D warnings
+      - name: Run clippy on code
+        run: cargo clippy -p code --all-targets -- -D warnings
 
   test:
     name: Test Suite
@@ -37,12 +35,10 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      - name: Run tests on common and code
-        run: |
-          echo "=== Testing common ==="
-          cargo test -p common --verbose
-          echo "=== Testing code ==="
-          cargo test -p code --verbose
+      - name: Run tests on common
+        run: cargo test -p common --verbose
+      - name: Run tests on code
+        run: cargo test -p code --verbose
 
   build:
     name: Build Tool
@@ -51,13 +47,12 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      - name: Build code tool
+      - name: Build common
+        run: cargo build --release -p common
+      - name: Build code
+        run: cargo build --release -p code
+      - name: Verify build artifacts
         run: |
-          echo "=== Building common ==="
-          cargo build --release -p common --verbose
-          echo "=== Building code ==="
-          cargo build --release -p code --verbose
-          echo "=== Build artifacts ==="
           ls -la target/release/code 2>/dev/null || echo "Binary not found"
           ls -la target/release/ 2>&1 | head -20
       - name: Upload artifact
@@ -66,3 +61,23 @@ jobs:
         with:
           name: code-binary
           path: target/release/code
+
+  validate-structure:
+    name: Validate Project Structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check common module structure
+        run: |
+          echo "=== Common module structure ==="
+          ls -la common/src/
+          ls -la common/src/config/
+          ls -la common/src/errors/
+          ls -la common/src/logging/
+          ls -la common/src/cli/
+          ls -la common/src/utils/
+      - name: Check code entry point
+        run: |
+          echo "=== Code entry point ==="
+          ls -la code/src/
+          head -20 code/src/main.rs

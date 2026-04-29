@@ -3,9 +3,7 @@ resolver = "2"
 members = [
     "common",
     "code",
-    "evolve",
     "7z",
-    "ai",
     "awk",
     "bat",
     "broot",
@@ -42,8 +40,6 @@ members = [
     "ping",
     "podman",
     "ps",
-    "qwencode",
-    "qwencode-git",
     "rust-utils",
     "scc",
     "sed",
